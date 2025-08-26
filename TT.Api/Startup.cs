@@ -37,7 +37,7 @@ namespace TT.Api
         {
             services.AddControllers();
 
-            services.AddSqlServerDb<TTDbContext, TTDbContext>()
+            services.AddDbContext<TTDbContext>()
                 .AddMvc();
 
             var cfg = this.Configuration.GetConfig<TTConfig>();
@@ -89,7 +89,7 @@ namespace TT.Api
 
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().WithOrigins(cfg.Cors.Origins.ToArray()).AllowCredentials());
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 

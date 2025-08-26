@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using TT.Lib.Entities;
 using System.IO;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace TT.Lib
 {
@@ -47,7 +47,7 @@ namespace TT.Lib
                    .SetBasePath(Directory.GetCurrentDirectory())
                    .AddJsonFile("appsettings.json")
                    .Build();
-                var connectionString = "Server=localhost;Initial Catalog=tt;Integrated Security=True;TrustServerCertificate=True;";
+                var connectionString = "Server=localhost;Database=tt;Integrated Security=true;TrustServerCertificate=true;";
                 optionsBuilder.UseSqlServer(connectionString);
             }
             else

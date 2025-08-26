@@ -11,7 +11,7 @@ namespace TT.Lib.ModelConfiguration
     {
         public void Configure(EntityTypeBuilder<ProductProperty> builder)
         {
-            builder.ToTable(nameof(ProductProperty), EntityBase.DefaultSchema);
+            builder.ToTable("ProductProperties", EntityBase.DefaultSchema);
 
             builder.Property(x => x.Id)
                    .ValueGeneratedOnAdd();
