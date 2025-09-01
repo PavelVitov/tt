@@ -9,11 +9,9 @@ using System.Linq;
 
 namespace TT.Api.Controllers
 {
-    /// <summary>
     /// DataController - Task 1 Implementation
-    /// Purpose: Load data WITHOUT Entity Framework using raw SQL connections
+    /// Purpose: Load data WITHOUT EF using raw SQL connections
     /// Requirements: 1.1 - Stored Procedures, 1.2 - Views
-    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class DataController : ControllerBase
@@ -48,40 +46,27 @@ namespace TT.Api.Controllers
                 await connection.OpenAsync();
 
                 // STEP 2: Check if stored procedure exists in database
-                using var checkCommand = new SqlCommand("SELECT COUNT(*) FROM sys.objects WHERE type = 'P' AND name = 'GetProducts'", connection);
-                var spExists = (int)await checkCommand.ExecuteScalarAsync() > 0;
-
-                SqlCommand command;
-                if (spExists)
+                bool spExists;
+                using (var checkCommand = new SqlCommand("SELECT COUNT(*) FROM sys.objects WHERE type = 'P' AND name = 'GetProducts'", connection))
                 {
-                    // OPTION A: Use stored procedure 
-                    command = new SqlCommand("GetProducts", connection)
-                    {
-                        CommandType = CommandType.StoredProcedure
-                    };
-                }
-                else
-                {
-                    // OPTION B: Fallback to direct table query
-                    command = new SqlCommand("SELECT Id, Name, [Key], BrandId FROM Products", connection)
-                    {
-                        CommandType = CommandType.Text
-                    };
+                    spExists = (int)await checkCommand.ExecuteScalarAsync() > 0;
                 }
 
-                using (command)
+                // STEP 3: Execute appropriate command with proper resource management
+                using var command = spExists 
+                    ? new SqlCommand("GetProducts", connection) { CommandType = CommandType.StoredProcedure }
+                    : new SqlCommand("SELECT Id, Name, [Key], BrandId FROM Products", connection) { CommandType = CommandType.Text };
+
+                using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    using var reader = await command.ExecuteReaderAsync();
-                    while (await reader.ReadAsync())
+                    products.Add(new
                     {
-                        products.Add(new
-                        {
-                            Id = reader.GetInt32("Id"),
-                            Name = reader.IsDBNull("Name") ? null : reader.GetString("Name"),
-                            Key = reader.IsDBNull("Key") ? null : reader.GetString("Key"),
-                            BrandId = reader.GetInt32("BrandId")
-                        });
-                    }
+                        Id = reader.GetInt32("Id"),
+                        Name = reader.IsDBNull("Name") ? null : reader.GetString("Name"),
+                        Key = reader.IsDBNull("Key") ? null : reader.GetString("Key"),
+                        BrandId = reader.GetInt32("BrandId")
+                    });
                 }
 
                 return Ok(new { 
@@ -167,11 +152,7 @@ namespace TT.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    error = ex.Message
-                });
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 

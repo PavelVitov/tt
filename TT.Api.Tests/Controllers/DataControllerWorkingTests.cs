@@ -6,9 +6,7 @@ using System.Reflection;
 
 namespace TT.Api.Tests.Controllers
 {
-    /// <summary>
     /// Working unit tests for DataController - focusing on attributes and structure
-    /// </summary>
     public class DataControllerWorkingTests
     {
         [Fact]

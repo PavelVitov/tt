@@ -35,6 +35,12 @@ namespace TT.Api.Controllers
         [Route("brand/{key}")]
         public async Task<IActionResult> ExportProductBrand(string key)
         {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(key) || key.Length > 50)
+            {
+                return BadRequest(new { error = "Invalid key parameter" });
+            }
+            
             try
             {
                 // STEP 1: Get static product data using Entity Framework
