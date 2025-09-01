@@ -90,14 +90,13 @@ namespace TT.Api.Controllers
 
                 return Ok(new { 
                     spExists,
-                    connectionString = _connectionString,
                     count = products.Count,
                     products 
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message, connectionString = _connectionString });
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -145,7 +144,7 @@ namespace TT.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message, connectionString = _connectionString });
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
@@ -169,7 +168,6 @@ namespace TT.Api.Controllers
                 return Ok(new
                 {
                     success = true,
-                    connectionString = _connectionString,
                     serverVersion,
                     database,
                     message = "Connection successful"
@@ -180,9 +178,7 @@ namespace TT.Api.Controllers
                 return StatusCode(500, new
                 {
                     success = false,
-                    connectionString = _connectionString,
-                    error = ex.Message,
-                    stackTrace = ex.StackTrace
+                    error = ex.Message
                 });
             }
         }
@@ -303,11 +299,12 @@ namespace TT.Api.Controllers
                 {
                     try
                     {
-                        using var command = new SqlCommand($@"
+                        using var command = new SqlCommand(@"
                             SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT
                             FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE TABLE_NAME = '{tableName}' 
+                            WHERE TABLE_NAME = @tableName 
                             ORDER BY ORDINAL_POSITION", connection);
+                        command.Parameters.AddWithValue("@tableName", tableName);
 
                         var columns = new List<object>();
                         using var reader = await command.ExecuteReaderAsync();
@@ -335,14 +332,26 @@ namespace TT.Api.Controllers
                     }
                 }
 
+                // Check if ProductProperties table has Type column (safe approach)
+                bool hasTypeColumn = false;
+                if (tables.TryGetValue("ProductProperties", out var productPropertiesTable))
+                {
+                    var tableInfo = productPropertiesTable as dynamic;
+                    if (tableInfo?.columns is List<object> columns)
+                    {
+                        hasTypeColumn = columns.Any(c => 
+                        {
+                            var columnInfo = c as dynamic;
+                            return columnInfo?.name?.ToString() == "Type";
+                        });
+                    }
+                }
+
                 return Ok(new
                 {
                     database = "tt",
                     tables = tables,
-                    productPropertiesHasType = tables.ContainsKey("ProductProperties") && 
-                                           ((dynamic)tables["ProductProperties"]).columns != null &&
-                                           ((List<object>)((dynamic)tables["ProductProperties"]).columns)
-                                           .Any(c => ((dynamic)c).name == "Type")
+                    productPropertiesHasType = hasTypeColumn
                 });
             }
             catch (Exception ex)

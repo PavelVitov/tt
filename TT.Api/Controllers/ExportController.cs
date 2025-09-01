@@ -87,7 +87,7 @@ namespace TT.Api.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+                return StatusCode(500, new { error = ex.Message });
             }
         }
 
