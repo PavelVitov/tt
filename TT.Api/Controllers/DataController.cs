@@ -20,9 +20,7 @@ namespace TT.Api.Controllers
     {
         private readonly string _connectionString;
 
-        /// <summary>
-        /// Constructor - Sets up raw SQL connection (NO Entity Framework)
-        /// </summary>
+        /// Constructor - Sets up raw SQL connection        
         public DataController(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("TTDbContext");
@@ -34,11 +32,9 @@ namespace TT.Api.Controllers
 
         #region TASK 1 
 
-        /// <summary>
         /// TASK 1.1 - Load data with stored procedure
-        /// Essential method demonstrating raw SQL stored procedure usage without Entity Framework
-        /// </summary>
-        /// <returns>List of products from stored procedure or table fallback</returns>
+        /// Uses raw SQL stored procedure without EF
+        /// returns: List of products from stored procedure or table fallback
         [HttpGet]
         [Route("products")]
         public async Task<IActionResult> GetProducts()
@@ -47,7 +43,7 @@ namespace TT.Api.Controllers
 
             try
             {
-                // STEP 1: Open raw SQL connection (NO Entity Framework)
+                // STEP 1: Open raw SQL connection
                 using var connection = new SqlConnection(_connectionString);
                 await connection.OpenAsync();
 
@@ -100,11 +96,9 @@ namespace TT.Api.Controllers
             }
         }
 
-        /// <summary>
         /// TASK 1.2 - Work with a view
-        /// Essential method demonstrating database view usage without Entity Framework
-        /// </summary>
-        /// <returns>List of properties from database view</returns>
+        /// Uses database view without EF
+        /// returns: List of properties from database view
         [HttpGet]
         [Route("properties")]
         public async Task<IActionResult> GetProperties()
@@ -148,17 +142,15 @@ namespace TT.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Essential connection test - proves raw SQL works without Entity Framework
-        /// </summary>
-        /// <returns>Connection status and database information</returns>
+        /// Proves raw SQL works without EF
+        /// returns:Connection status and database information
         [HttpGet]
         [Route("test-connection")]
         public async Task<IActionResult> TestConnection()
         {
             try
             {
-                // Test raw SQL connection (NO Entity Framework)
+                // Test raw SQL connection
                 using var connection = new SqlConnection(_connectionString);
                 await connection.OpenAsync();
                 
@@ -187,10 +179,7 @@ namespace TT.Api.Controllers
 
         #region HELPER METHODS (Useful for demonstrations and testing)
 
-        /// <summary>
         /// Helper: Shows all foreign key relationships in the database
-        /// Useful for proving database integrity
-        /// </summary>
         [HttpGet]
         [Route("foreign-keys")]
         public async Task<IActionResult> GetForeignKeys()
@@ -237,10 +226,7 @@ namespace TT.Api.Controllers
             }
         }
 
-        /// <summary>
         /// Helper: Lists all tables in the database
-        /// Useful for database exploration and verification
-        /// </summary>
         [HttpGet]
         [Route("all-tables")]
         public async Task<IActionResult> GetAllTables()
@@ -276,11 +262,9 @@ namespace TT.Api.Controllers
             }
         }
 
-        /// <summary>
         /// Helper: Checks database schema and verifies Task 2 completion
         /// Shows all table structures and confirms Type field exists
         /// IMPORTANT: This proves Task 2 migration was successful!
-        /// </summary>
         [HttpGet]
         [Route("schema-check")]
         public async Task<IActionResult> CheckSchema()

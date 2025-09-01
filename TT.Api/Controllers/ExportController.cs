@@ -10,21 +10,16 @@ using Newtonsoft.Json.Linq;
 
 namespace TT.Api.Controllers
 {
-    /// <summary>
-    /// ExportController - Task 3 Implementation
+    /// ExportController - Task 3
     /// Purpose: Export products with dynamic property tree using Entity Framework
     /// Requirements: Static functions (ID, Name) + Dynamic functions (Properties hierarchy)
-    /// Features: Real-time database changes reflection, recursive property building
-    /// </summary>
     [Route("[controller]")]
     [ApiController]
     public class ExportController : ControllerBase
     {
         private readonly TTDbContext _context;
 
-        /// <summary>
-        /// Constructor - Uses Entity Framework (contrast with DataController)
-        /// </summary>
+        /// Constructor - Uses Entity Framework
         public ExportController(TTDbContext context)
         {
             _context = context;
@@ -32,14 +27,10 @@ namespace TT.Api.Controllers
 
         #region TASK 3 
 
-        /// <summary>
         /// TASK 3 - Main export functionality
         /// Combines static data (product info) with dynamic properties from database
         /// Features: Real-time reflection, recursive hierarchy, nested JSON structure
-        /// Example: /export/brand/SM2L returns product with ui.samo:"Levski" if added to DB - as Stefan sent via email
-        /// </summary>
-        /// <param name="key">Product key (e.g., SM2L, PK_INTP_DSL50_1016)</param>
-        /// <returns>JSON with static product info + dynamic property tree</returns>
+        /// returns: JSON with static product info + dynamic property tree
         [HttpGet]
         [Route("brand/{key}")]
         public async Task<IActionResult> ExportProductBrand(string key)
@@ -55,7 +46,7 @@ namespace TT.Api.Controllers
                     return NotFound(new { error = $"Product with key '{key}' not found" });
                 }
 
-                // STEP 2: Get dynamic properties using EF with Include (joins ProductProperties + Properties)
+                // STEP 2: Get dynamic properties using EF with Include
                 var productProperties = await _context.ProductProperties
                     .Include(pp => pp.Property) // EF automatically joins the tables
                     .Where(pp => pp.ProductId == product.Id)
@@ -70,8 +61,8 @@ namespace TT.Api.Controllers
                 // STEP 5: Construct final JSON response
                 var result = new JObject
                 {
-                    ["id"] = product.Key,    // Static data
-                    ["name"] = product.Name  // Static data
+                    ["id"] = product.Key,    
+                    ["name"] = product.Name  
                 };
 
                 // STEP 6: Add the dynamic property tree to response
@@ -95,10 +86,8 @@ namespace TT.Api.Controllers
 
         #region HELPER METHODS (Useful for demonstrations and testing)
 
-        /// <summary>
         /// Helper: Shows available products for testing export functionality
-        /// Useful for demonstrating what product keys can be used
-        /// </summary>
+        /// Demonstrating what product keys can be used
         [HttpGet]
         [Route("products")]
         public async Task<IActionResult> GetAvailableProducts()
@@ -118,10 +107,8 @@ namespace TT.Api.Controllers
             }
         }
 
-        /// <summary>
         /// Helper: Find property IDs for setting up real-time demo
         /// Shows UI, root, and product properties for demo preparation
-        /// </summary>
         [HttpGet]
         [Route("find-properties")]
         public async Task<IActionResult> FindProperties()
@@ -145,10 +132,8 @@ namespace TT.Api.Controllers
 
         #region PRIVATE HELPER METHODS (Internal logic for building property tree)
 
-        /// <summary>
         /// Builds the dynamic property tree from database properties
-        /// This is where the magic happens - converts flat property list into nested JSON
-        /// </summary>
+        /// Converts flat property list into nested JSON
         private JObject BuildPropertyTree(List<ProductProperty> productProperties, List<Property> allProperties)
         {
             // Create lookup dictionaries
@@ -156,7 +141,7 @@ namespace TT.Api.Controllers
             
             var result = new JObject();
             
-            // Build tree for each product property (handle duplicates by processing all values)
+            // Build tree for each product property 
             foreach (var productProperty in productProperties)
             {
                 if (propertyLookup.ContainsKey(productProperty.PropertyId))
@@ -186,7 +171,7 @@ namespace TT.Api.Controllers
                 // Skip "Root" from path as it's not needed in final output
                 if (prop.Name.ToLower() != "root")
                 {
-                    path.Insert(0, prop.Name.ToLower()); // Insert at beginning to reverse the path
+                    path.Insert(0, prop.Name.ToLower()); 
                 }
                 
                 currentId = prop.ParentId;
